@@ -1,12 +1,16 @@
 package dgut.rpc.handler;
 
 import dgut.rpc.coder.socket.RpcEncoderImpl;
+import dgut.rpc.protocol.RpcRequest;
 import dgut.rpc.protocol.RpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import io.protostuff.Response;
@@ -46,5 +50,22 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.info("连接时发生异常");
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleState state = ((IdleStateEvent) evt).state();
+            if (state == IdleState.WRITER_IDLE) {
+                System.out.println("发送心跳包");
+                ctx.writeAndFlush(RpcRequest.builder().heartBeat(true).build());
+            } else {
+                ctx.close();
+                System.out.println("断开连接");
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+
     }
 }

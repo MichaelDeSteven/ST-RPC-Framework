@@ -14,8 +14,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -48,6 +51,7 @@ public class NettyRpcServerImpl extends AbstractRpcServer {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline p = socketChannel.pipeline();
                             p.addLast(new NettyCommonDecoder(RpcRequest.class))
+                                    .addLast(new IdleStateHandler(5L, 0, 0, TimeUnit.SECONDS))
                                     .addLast(new RpcEncoderImpl())
                                     .addLast(new NettyServerHandler(handler));
 

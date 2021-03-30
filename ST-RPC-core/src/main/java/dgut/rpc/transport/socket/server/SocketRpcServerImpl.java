@@ -44,8 +44,11 @@ public class SocketRpcServerImpl extends AbstractRpcServer<ServerSocket> {
             ss = new ServerSocket(port);
         } catch (IOException e) {
             logger.error(RpcError.UNKNOWN_ERROR.getMessage());
+        } finally {
+            ThreadPoolFactory.shutdown();
         }
         logger.info("服务器启动成功");
+
         scanServices();
         Socket socket = null;
         while (true) {
@@ -59,5 +62,6 @@ public class SocketRpcServerImpl extends AbstractRpcServer<ServerSocket> {
             threadPoolExecutor
                     .execute(new SocketRequestThreadHandler(socket, handler));
         }
+
     }
 }

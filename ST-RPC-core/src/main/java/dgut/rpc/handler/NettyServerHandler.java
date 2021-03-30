@@ -4,6 +4,9 @@ import dgut.rpc.protocol.RpcRequest;
 import dgut.rpc.transport.netty.server.NettyRpcServerImpl;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +30,13 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext,
                                 RpcRequest rpcRequest) throws Exception {
-        // 接收并处理消息
-        Object response = handler.handle(rpcRequest);
-
-        // 发送信息给客户端
-        channelHandlerContext.writeAndFlush(response);
-        channelHandlerContext.channel().close();
+        if (rpcRequest.isHeartBeat()) {
+            logger.info("收到来自客户端的心跳包");
+            return;
+        } else {
+            Object response = handler.handle(rpcRequest);
+            channelHandlerContext.writeAndFlush(response);
+        }
     }
 
     @Override
@@ -42,5 +46,15 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
         ctx.close();
     }
 
-
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            if (((IdleStateEvent) evt).state() == IdleState.READER_IDLE) {
+                logger.info("长时间未响应，中断该连接");
+                ctx.channel().close();
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
 }

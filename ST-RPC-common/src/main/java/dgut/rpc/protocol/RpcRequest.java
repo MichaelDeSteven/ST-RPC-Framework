@@ -53,4 +53,9 @@ public class RpcRequest implements Serializable {
      */
     private String version;
 
+    /**
+     * 是否为心跳包
+     */
+    private boolean heartBeat;
+
 }

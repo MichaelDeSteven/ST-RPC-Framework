@@ -59,7 +59,8 @@ public class ChannelProvider {
             @Override
             protected void initChannel(SocketChannel ch) {
                 ChannelPipeline p = ch.pipeline();
-                p.addLast(new NettyCommonDecoder(RpcResponse.class))
+                p.addLast(new IdleStateHandler(0L, 5L, 0, TimeUnit.SECONDS))
+                        .addLast(new NettyCommonDecoder(RpcResponse.class))
                         .addLast(new RpcEncoderImpl(serializerCode))
                         .addLast(new NettyClientHandler());
             }

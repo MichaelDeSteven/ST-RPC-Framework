@@ -22,14 +22,14 @@ public class NacosServiceDiscoveryImpl implements IServiceDiscovery {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosServiceDiscoveryImpl.class);
 
-    private ILoadBalancer loadBlancer;
+    private ILoadBalancer loadBalancer;
 
     public NacosServiceDiscoveryImpl() {
-        loadBlancer = new RandomLoadBalancerImpl();
+        loadBalancer = new RandomLoadBalancerImpl();
     }
 
     public NacosServiceDiscoveryImpl(ILoadBalancer loadBlancer) {
-        this.loadBlancer = loadBlancer;
+        this.loadBalancer = loadBlancer;
         if (loadBlancer == null) loadBlancer = new RandomLoadBalancerImpl();
     }
 
@@ -39,7 +39,7 @@ public class NacosServiceDiscoveryImpl implements IServiceDiscovery {
 
         try {
             instances = NacosUtil.getAllInstances(serviceName);
-            Instance instance = loadBlancer.select(instances);
+            Instance instance = loadBalancer.select(instances);
             return new InetSocketAddress(instance.getIp(), instance.getPort());
         } catch (NacosException e) {
             logger.error("找不到对应的服务");

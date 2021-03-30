@@ -1,6 +1,5 @@
 package dgut.rpc.handler;
 
-import dgut.rpc.coder.ICommonDecoder;
 import dgut.rpc.coder.ICommonEncoder;
 import dgut.rpc.coder.socket.RpcDecoderImpl;
 import dgut.rpc.coder.socket.RpcEncoderImpl;
