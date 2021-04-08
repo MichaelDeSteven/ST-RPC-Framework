@@ -1,6 +1,6 @@
 package dgut.rpc.coder;
 
-import dgut.rpc.coder.socket.RpcEncoderImpl;
+import dgut.rpc.coder.impl.RpcEncoderImpl;
 import dgut.rpc.protocol.RpcRequest;
 import lombok.extern.slf4j.Slf4j;
 

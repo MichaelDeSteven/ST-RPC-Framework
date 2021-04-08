@@ -30,8 +30,6 @@ public class NettyRpcClientImpl extends AbstractRpcClient {
 
     private ILoadBalancer loadBalancer;
 
-    private Bootstrap bootstrap;
-
     private static UnprocessedRequestsHandler unprocessedRequestsHandler
             = UnprocessedRequestsHandler.getInstance();
 
@@ -55,7 +53,7 @@ public class NettyRpcClientImpl extends AbstractRpcClient {
 
     @Override
     public CompletableFuture<RpcResponse> sendRequest(RpcRequest request) {
-        IServiceDiscovery discovery = new NacosServiceDiscoveryImpl();
+        IServiceDiscovery discovery = new NacosServiceDiscoveryImpl(loadBalancer);
         InetSocketAddress inetSocketAddress = discovery
                 .lookupService(request.getInterfaceName());
 

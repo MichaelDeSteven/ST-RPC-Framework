@@ -3,6 +3,7 @@ package dgut.rpc.loadbalance.impl;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import dgut.rpc.loadbalance.AbstractLoadBalance;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**

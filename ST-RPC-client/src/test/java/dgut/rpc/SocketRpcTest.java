@@ -18,6 +18,7 @@ public class SocketRpcTest {
         RpcRequestProxy rpcRequestProxy = new RpcRequestProxy(new SocketRpcClientImpl(),
                 rpcServicePropertyUtil);
         IHelloService iHelloService = rpcRequestProxy.getProxy(IHelloService.class);
+        StringBuilder sb = new StringBuilder("");
         System.out.println(iHelloService.hello("rpc"));
     }
 }

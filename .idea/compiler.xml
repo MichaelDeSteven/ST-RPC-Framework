@@ -7,10 +7,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ST-RPC-core" />
-        <module name="ST-RPC-client" />
-        <module name="ST-RPC-api" />
         <module name="ST-RPC-server" />
         <module name="ST-RPC-common" />
+        <module name="ST-RPC-api" />
+        <module name="ST-RPC-client" />
       </profile>
     </annotationProcessing>
   </component>

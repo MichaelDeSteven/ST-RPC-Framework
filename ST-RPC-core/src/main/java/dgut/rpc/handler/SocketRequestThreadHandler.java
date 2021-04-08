@@ -1,8 +1,8 @@
 package dgut.rpc.handler;
 
 import dgut.rpc.coder.ICommonEncoder;
-import dgut.rpc.coder.socket.RpcDecoderImpl;
-import dgut.rpc.coder.socket.RpcEncoderImpl;
+import dgut.rpc.coder.impl.RpcDecoderImpl;
+import dgut.rpc.coder.impl.RpcEncoderImpl;
 import dgut.rpc.protocol.RpcRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class SocketRequestThreadHandler implements Runnable {
     public void run() {
         try (InputStream is = socket.getInputStream();
         OutputStream os = socket.getOutputStream()) {
-            RpcDecoderImpl<RpcRequest, InputStream> decoder = new RpcDecoderImpl();
+            RpcDecoderImpl<RpcRequest> decoder = new RpcDecoderImpl();
             RpcRequest request = decoder.decode(is, RpcRequest.class);
             Object result = handler.handle(request);
 

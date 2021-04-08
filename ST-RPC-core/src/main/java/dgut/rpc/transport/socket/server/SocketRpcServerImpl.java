@@ -1,11 +1,9 @@
 package dgut.rpc.transport.socket.server;
 
 import dgut.rpc.enumeration.RpcError;
-import dgut.rpc.factory.ThreadPoolFactory;
+import dgut.rpc.threadpool.ThreadPoolFactory;
 import dgut.rpc.handler.RpcRequestHandler;
 import dgut.rpc.handler.SocketRequestThreadHandler;
-import dgut.rpc.provider.impl.ServiceProviderImpl;
-import dgut.rpc.registry.impl.NacosServiceRegistryImpl;
 import dgut.rpc.transport.AbstractRpcServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +42,6 @@ public class SocketRpcServerImpl extends AbstractRpcServer<ServerSocket> {
             ss = new ServerSocket(port);
         } catch (IOException e) {
             logger.error(RpcError.UNKNOWN_ERROR.getMessage());
-        } finally {
-            ThreadPoolFactory.shutdown();
         }
         logger.info("服务器启动成功");
 

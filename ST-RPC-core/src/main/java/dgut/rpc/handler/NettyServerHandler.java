@@ -50,7 +50,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             if (((IdleStateEvent) evt).state() == IdleState.READER_IDLE) {
-                logger.info("长时间未响应，中断该连接");
+                logger.info("长时间未响应，中断客户端" + ctx.channel().remoteAddress() + "连接");
                 ctx.channel().close();
             }
         } else {

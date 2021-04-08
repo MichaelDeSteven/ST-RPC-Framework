@@ -1,19 +1,12 @@
 package dgut.rpc.handler;
 
-import dgut.rpc.coder.socket.RpcEncoderImpl;
 import dgut.rpc.protocol.RpcRequest;
 import dgut.rpc.protocol.RpcResponse;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
-import io.protostuff.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,11 +50,11 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse>
         if (evt instanceof IdleStateEvent) {
             IdleState state = ((IdleStateEvent) evt).state();
             if (state == IdleState.WRITER_IDLE) {
-                System.out.println("发送心跳包");
+                logger.info("发送心跳包");
                 ctx.writeAndFlush(RpcRequest.builder().heartBeat(true).build());
             } else {
                 ctx.close();
-                System.out.println("断开连接");
+                logger.info("断开连接");
             }
         } else {
             super.userEventTriggered(ctx, evt);

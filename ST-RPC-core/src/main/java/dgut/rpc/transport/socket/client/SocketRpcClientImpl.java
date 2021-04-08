@@ -2,8 +2,8 @@ package dgut.rpc.transport.socket.client;
 
 import dgut.rpc.coder.ICommonDecoder;
 import dgut.rpc.coder.ICommonEncoder;
-import dgut.rpc.coder.socket.RpcDecoderImpl;
-import dgut.rpc.coder.socket.RpcEncoderImpl;
+import dgut.rpc.coder.impl.RpcDecoderImpl;
+import dgut.rpc.coder.impl.RpcEncoderImpl;
 import dgut.rpc.loadbalance.ILoadBalancer;
 import dgut.rpc.loadbalance.impl.RandomLoadBalancerImpl;
 import dgut.rpc.protocol.RpcRequest;
@@ -66,10 +66,14 @@ public class SocketRpcClientImpl extends AbstractRpcClient {
             os = s.getOutputStream();
             is = s.getInputStream();
             os.write(encoder.encode(request));
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        try {
+            return (RpcResponse) (decoder).decode(is, RpcResponse.class);
+        } catch (Exception e) {
+            logger.error("解码时发生错误:", e);
+            throw new RuntimeException("解码时发生错误");
         } finally {
             try {
                 if (is != null) is.close();
@@ -77,12 +81,6 @@ public class SocketRpcClientImpl extends AbstractRpcClient {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        try {
-            return (RpcResponse) (decoder).decode(is, RpcResponse.class);
-        } catch (Exception e) {
-            logger.error("解码时发生错误:", e);
-            throw new RuntimeException("解码时发生错误");
         }
     }
 }

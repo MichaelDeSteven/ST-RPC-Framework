@@ -1,7 +1,7 @@
 package dgut.rpc.transport.netty.server;
 
-import dgut.rpc.coder.netty.NettyCommonDecoder;
-import dgut.rpc.coder.socket.RpcEncoderImpl;
+import dgut.rpc.coder.impl.RpcDecoderImpl;
+import dgut.rpc.coder.impl.RpcEncoderImpl;
 import dgut.rpc.handler.NettyServerHandler;
 import dgut.rpc.handler.RpcRequestHandler;
 import dgut.rpc.protocol.RpcRequest;
@@ -50,7 +50,7 @@ public class NettyRpcServerImpl extends AbstractRpcServer {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline p = socketChannel.pipeline();
-                            p.addLast(new NettyCommonDecoder(RpcRequest.class))
+                            p.addLast(new RpcDecoderImpl(RpcRequest.class))
                                     .addLast(new IdleStateHandler(5L, 0, 0, TimeUnit.SECONDS))
                                     .addLast(new RpcEncoderImpl())
                                     .addLast(new NettyServerHandler(handler));

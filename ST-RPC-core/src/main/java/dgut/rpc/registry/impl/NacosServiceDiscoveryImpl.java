@@ -28,9 +28,8 @@ public class NacosServiceDiscoveryImpl implements IServiceDiscovery {
         loadBalancer = new RandomLoadBalancerImpl();
     }
 
-    public NacosServiceDiscoveryImpl(ILoadBalancer loadBlancer) {
-        this.loadBalancer = loadBlancer;
-        if (loadBlancer == null) loadBlancer = new RandomLoadBalancerImpl();
+    public NacosServiceDiscoveryImpl(ILoadBalancer loadBalancer) {
+        this.loadBalancer = loadBalancer;
     }
 
     @Override

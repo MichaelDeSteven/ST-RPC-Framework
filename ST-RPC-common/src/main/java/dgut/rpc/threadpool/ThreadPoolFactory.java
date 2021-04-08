@@ -23,6 +23,10 @@ public class ThreadPoolFactory {
 
     private static ExecutorService threadPool;
 
+    public static ExecutorService createDefaultThreadPool() {
+        return createDefaultThreadPool("thread-pool", false);
+    }
+
     public static ExecutorService createDefaultThreadPool(String threadNamePrefix) {
         return createDefaultThreadPool(threadNamePrefix, false);
     }
@@ -31,7 +35,12 @@ public class ThreadPoolFactory {
         BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         return new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE_SIZE,
-                KEEP_ALIVE_TIME, TimeUnit.MINUTES, workQueue, threadFactory);
+                KEEP_ALIVE_TIME, TimeUnit.SECONDS, workQueue, threadFactory);
     }
 
+    public static void shutdown() {
+        if (threadPool.isShutdown() == false) {
+            threadPool.shutdown();
+        }
+    }
 }

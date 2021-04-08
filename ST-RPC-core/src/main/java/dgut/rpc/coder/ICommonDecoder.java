@@ -7,7 +7,7 @@ import java.io.InputStream;
  * @author: Steven
  * @time: 2021/3/7 0:29
  */
-public interface ICommonDecoder<T, V> {
+public interface ICommonDecoder<T> {
 
-    T decode(V stream, Class<T> clazz) throws Exception;
+    T decode(InputStream stream, Class<T> clazz) throws Exception;
 }
