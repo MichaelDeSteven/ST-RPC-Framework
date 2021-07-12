@@ -4,13 +4,6 @@ import java.net.URL;
 
 public class UrlUtils {
 
-    public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
-        if (param != null && pattern.startsWith("$")) {
-            pattern = param.getRawParameter(pattern.substring(1));
-        }
-        return isMatchGlobPattern(pattern, value);
-    }
-
     public static boolean isMatchGlobPattern(String pattern, String value) {
         if ("*".equals(pattern)) {
             return true;

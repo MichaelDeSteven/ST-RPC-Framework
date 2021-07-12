@@ -2,7 +2,6 @@ package dgut.rpc.router;
 
 import com.alibaba.nacos.api.naming.pojo.Instance;
 
-import java.time.Instant;
 import java.util.List;
 
 /**
@@ -12,5 +11,5 @@ import java.util.List;
  */
 public interface Router {
 
-    List<Instance> route(List<Instant> instants);
+    List<Instance> route(List<Instance> instants);
 }
