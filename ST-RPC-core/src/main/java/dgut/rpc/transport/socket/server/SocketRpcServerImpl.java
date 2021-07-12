@@ -1,7 +1,7 @@
 package dgut.rpc.transport.socket.server;
 
 import dgut.rpc.enumeration.RpcError;
-import dgut.rpc.threadpool.ThreadPoolFactory;
+import dgut.rpc.threadpool.DynamicThreadPoolManager;
 import dgut.rpc.handler.RpcRequestHandler;
 import dgut.rpc.handler.SocketRequestThreadHandler;
 import dgut.rpc.transport.AbstractRpcServer;
@@ -22,6 +22,8 @@ public class SocketRpcServerImpl extends AbstractRpcServer<ServerSocket> {
 
     private static final Logger logger = LoggerFactory.getLogger(SocketRpcServerImpl.class);
 
+    private DynamicThreadPoolManager manager;
+
     private ThreadPoolExecutor threadPoolExecutor;
 
     private RpcRequestHandler handler;
@@ -29,7 +31,8 @@ public class SocketRpcServerImpl extends AbstractRpcServer<ServerSocket> {
 
     public SocketRpcServerImpl(int port) {
         super(port);
-        threadPoolExecutor = (ThreadPoolExecutor) ThreadPoolFactory.createDefaultThreadPool();
+        manager = DynamicThreadPoolManager.getInstance();
+        threadPoolExecutor = manager.createThreadPoolExecutor();
         handler = new RpcRequestHandler(serviceProvider);
     }
 

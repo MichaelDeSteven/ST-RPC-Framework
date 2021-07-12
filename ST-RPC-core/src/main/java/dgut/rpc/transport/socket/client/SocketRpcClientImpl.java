@@ -1,9 +1,11 @@
 package dgut.rpc.transport.socket.client;
 
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import dgut.rpc.coder.ICommonDecoder;
 import dgut.rpc.coder.ICommonEncoder;
 import dgut.rpc.coder.impl.RpcDecoderImpl;
 import dgut.rpc.coder.impl.RpcEncoderImpl;
+import dgut.rpc.factory.SingletonFactory;
 import dgut.rpc.loadbalance.ILoadBalancer;
 import dgut.rpc.loadbalance.impl.RandomLoadBalancerImpl;
 import dgut.rpc.protocol.RpcRequest;
@@ -53,9 +55,10 @@ public class SocketRpcClientImpl extends AbstractRpcClient {
 
     @Override
     public RpcResponse sendRequest(RpcRequest request) {
-        IServiceDiscovery discovery = new NacosServiceDiscoveryImpl();
-        InetSocketAddress inetSocketAddress = discovery
-                .lookupService(request.getInterfaceName());
+        IServiceDiscovery discovery =
+                SingletonFactory.getInstance(NacosServiceDiscoveryImpl.class);
+        InetSocketAddress inetSocketAddress =
+                loadBalancer.selectAddr(discovery.lookupService(request.getInterfaceName()));
         OutputStream os = null;
         InputStream is = null;
         ICommonEncoder encoder = new RpcEncoderImpl((byte)serializerCode);

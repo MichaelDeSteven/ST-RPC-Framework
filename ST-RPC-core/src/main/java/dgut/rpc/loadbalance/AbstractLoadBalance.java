@@ -2,6 +2,7 @@ package dgut.rpc.loadbalance;
 
 import com.alibaba.nacos.api.naming.pojo.Instance;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
@@ -22,4 +23,13 @@ public abstract class AbstractLoadBalance implements ILoadBalancer {
     }
 
     protected abstract Instance doSelect(List<Instance> instances);
+
+    @Override
+    public InetSocketAddress selectAddr(List<Instance> instances) {
+        if (instances == null || instances.size() == 0) {
+            return null;
+        }
+        Instance instance = select(instances);
+        return new InetSocketAddress(instance.getIp(), instance.getPort());
+    }
 }

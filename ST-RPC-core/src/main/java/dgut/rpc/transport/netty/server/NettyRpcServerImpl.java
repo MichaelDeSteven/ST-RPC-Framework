@@ -61,7 +61,6 @@ public class NettyRpcServerImpl extends AbstractRpcServer {
             logger.info("服务器启动成功");
             scanServices();
             channelFuture.channel().closeFuture().sync();
-
         } catch (InterruptedException e) {
             e.printStackTrace();
             logger.error("服务器启动失败");

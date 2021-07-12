@@ -2,7 +2,6 @@ package dgut.rpc.serializer.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dgut.rpc.enumeration.RpcError;
 import dgut.rpc.enumeration.SerializerCode;
 import dgut.rpc.serializer.ISerializer;
 import org.slf4j.Logger;

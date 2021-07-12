@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @description: ThreadPoolFactory
@@ -15,9 +16,9 @@ public class ThreadPoolFactory {
      * 线程池参数
      */
     private static final int CORE_POOL_SIZE = 10;
-    private static final int MAXIMUM_POOL_SIZE_SIZE = 100;
+    private static final int MAXIMUM_POOL_SIZE_SIZE = 10;
     private static final int KEEP_ALIVE_TIME = 1;
-    private static final int BLOCKING_QUEUE_CAPACITY = 100;
+    private static final int BLOCKING_QUEUE_CAPACITY = 10;
 
     private final static Logger logger = LoggerFactory.getLogger(ThreadPoolFactory.class);
 
@@ -32,8 +33,10 @@ public class ThreadPoolFactory {
     }
 
     private static ExecutorService createDefaultThreadPool(String threadNamePrefix, Boolean daemon) {
-        BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
-        ThreadFactory threadFactory = Executors.defaultThreadFactory();
+        BlockingQueue<Runnable> workQueue = new ResizableCapacityLinkedBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
+
+        ThreadFactory threadFactory = new myThreadFactory(threadNamePrefix, daemon);
+
         return new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE_SIZE,
                 KEEP_ALIVE_TIME, TimeUnit.SECONDS, workQueue, threadFactory);
     }
@@ -43,4 +46,40 @@ public class ThreadPoolFactory {
             threadPool.shutdown();
         }
     }
+
+
+    static class myThreadFactory implements ThreadFactory {
+
+        private static final AtomicInteger poolNumber = new AtomicInteger(1);
+
+        private final ThreadGroup group;
+
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+        private final String namePrefix;
+
+        private final boolean daemon;
+
+        myThreadFactory(String threadPoolName, boolean daemon) {
+            this.daemon = daemon;
+            SecurityManager s = System.getSecurityManager();
+            group = (s != null) ? s.getThreadGroup() :
+                    Thread.currentThread().getThreadGroup();
+            namePrefix = threadPoolName + "-" + poolNumber.getAndIncrement() + "-thread-";
+        }
+
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(group, r,
+                    namePrefix + threadNumber.getAndIncrement(),
+                    0);
+            t.setDaemon(daemon);
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+            return t;
+        }
+    }
+
 }

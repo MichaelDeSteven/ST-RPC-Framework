@@ -22,11 +22,13 @@ public class NacosServiceRegistryImpl implements IServiceRegistry {
     public void registry(String serviceName, InetSocketAddress address) {
         try {
             NacosUtil.registerService(serviceName, address);
+            logger.info("[op:NacosServiceRegistryImpl:registry] 服务注册完毕：" +
+                            "服务名为：{},服务提供方为：{}:{}",
+                    serviceName, address.getHostString(), address.getPort());
         } catch (NacosException e) {
-            logger.error("注册服务失败");
+            logger.error("[op:NacosServiceRegistryImpl:registry] 服务注册失败");
             throw new RuntimeException(RpcError.REGISTER_SERVICE_FAILED.getMessage());
         }
     }
-
 
 }

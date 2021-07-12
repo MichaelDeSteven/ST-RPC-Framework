@@ -3,8 +3,6 @@ package dgut.rpc.registry.impl;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import dgut.rpc.enumeration.RpcError;
-import dgut.rpc.loadbalance.ILoadBalancer;
-import dgut.rpc.loadbalance.impl.RandomLoadBalancerImpl;
 import dgut.rpc.registry.IServiceDiscovery;
 import dgut.rpc.util.NacosUtil;
 import org.slf4j.Logger;
@@ -12,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @description: NacosServiceDiscoveryImpl
@@ -22,26 +21,12 @@ public class NacosServiceDiscoveryImpl implements IServiceDiscovery {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosServiceDiscoveryImpl.class);
 
-    private ILoadBalancer loadBalancer;
-
-    public NacosServiceDiscoveryImpl() {
-        loadBalancer = new RandomLoadBalancerImpl();
-    }
-
-    public NacosServiceDiscoveryImpl(ILoadBalancer loadBalancer) {
-        this.loadBalancer = loadBalancer;
-    }
-
     @Override
-    public InetSocketAddress lookupService(String serviceName) {
-        List<Instance> instances;
-
+    public List<Instance> lookupService(String serviceName) {
         try {
-            instances = NacosUtil.getAllInstances(serviceName);
-            Instance instance = loadBalancer.select(instances);
-            return new InetSocketAddress(instance.getIp(), instance.getPort());
+            return NacosUtil.getAllInstances(serviceName);
         } catch (NacosException e) {
-            logger.error("找不到对应的服务");
+            logger.error("[op:NacosServiceDiscoveryImpl:lookupService] 找不到对应的服务");
             throw new RuntimeException(RpcError.SERVICE_NOT_FOUND.getMessage());
         }
     }

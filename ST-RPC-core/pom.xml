@@ -18,6 +18,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>dgut.rpc</groupId>
+            <artifactId>ST-RPC-base</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
 
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
@@ -62,6 +69,8 @@
             <artifactId>protostuff-runtime</artifactId>
             <version>1.7.2</version>
         </dependency>
+
+
     </dependencies>
 
 </project>

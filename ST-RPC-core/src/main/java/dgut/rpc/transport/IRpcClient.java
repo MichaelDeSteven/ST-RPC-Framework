@@ -12,5 +12,10 @@ import java.io.IOException;
  */
 public interface IRpcClient<T> {
 
+    /**
+     * 代理方法
+     * @param request
+     * @return
+     */
     T sendRequest(RpcRequest request);
 }

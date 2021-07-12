@@ -1,5 +1,7 @@
 package dgut.rpc.transport.netty.client;
 
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import dgut.rpc.factory.SingletonFactory;
 import dgut.rpc.handler.UnprocessedRequestsHandler;
 import dgut.rpc.loadbalance.ILoadBalancer;
 import dgut.rpc.loadbalance.impl.RandomLoadBalancerImpl;
@@ -10,7 +12,6 @@ import dgut.rpc.registry.impl.NacosServiceDiscoveryImpl;
 import dgut.rpc.transport.AbstractRpcClient;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
-import jdk.nashorn.internal.runtime.linker.Bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,10 +54,10 @@ public class NettyRpcClientImpl extends AbstractRpcClient {
 
     @Override
     public CompletableFuture<RpcResponse> sendRequest(RpcRequest request) {
-        IServiceDiscovery discovery = new NacosServiceDiscoveryImpl(loadBalancer);
-        InetSocketAddress inetSocketAddress = discovery
-                .lookupService(request.getInterfaceName());
-
+        IServiceDiscovery discovery =
+                SingletonFactory.getInstance(NacosServiceDiscoveryImpl.class);
+        InetSocketAddress inetSocketAddress =
+                loadBalancer.selectAddr(discovery.lookupService(request.getInterfaceName()));
         CompletableFuture<RpcResponse> completableFuture = new CompletableFuture<>();
         try {
             Channel channel = ChannelProvider.get(inetSocketAddress, serializerCode);
