@@ -1,6 +1,5 @@
 package dgut.rpc.util;
 
-import java.net.URL;
 
 public class UrlUtils {
 

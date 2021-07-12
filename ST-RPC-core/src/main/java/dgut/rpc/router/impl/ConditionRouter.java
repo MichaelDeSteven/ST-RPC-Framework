@@ -2,12 +2,14 @@ package dgut.rpc.router.impl;
 
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import dgut.rpc.router.AbstractRouter;
+import dgut.rpc.util.CollectionUtils;
 import dgut.rpc.util.StringUtils;
 import dgut.rpc.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,8 +37,28 @@ public class ConditionRouter extends AbstractRouter {
 
     @Override
     public List<Instance> route(List<Instance> instants) {
-        List<Instance> list = new ArrayList<>();
-        return list;
+        if (!enabled || CollectionUtils.isEmpty(instants)) {
+            return instants;
+        }
+        try {
+            // 不满足条件则提前返回
+            if (!matchWhen(whenCondition) || thenCondition == null) {
+                return instants;
+            }
+
+            List<Instance> result = new ArrayList<>();
+            for (Instance instance : instants) {
+                if (matchThen(thenCondition, instance)) {
+                    result.add(instance);
+                }
+            }
+            if (!result.isEmpty()) {
+                return result;
+            }
+        } catch (Throwable t) {
+            logger.error("执行条件路由发生异常: " + "cause: " + t.getMessage());
+        }
+        return instants;
     }
 
     public void init(String rule) {
@@ -61,19 +83,37 @@ public class ConditionRouter extends AbstractRouter {
         }
     }
 
+    private boolean matchWhen(Map<String, MatchPair> condition) {
+        return CollectionUtils.isEmptyMap(condition) ||
+                matchCondition(condition, new Instance());
+    }
 
-//    private boolean matchWhen(URL url, Invocation invocation) {
-////        return CollectionUtils.isEmptyMap(whenCondition) || matchCondition(whenCondition, url, null, invocation);
-//        return true;
-//    }
+    private boolean matchThen(Map<String, MatchPair> condition, Instance instance) {
+        return !CollectionUtils.isEmptyMap(condition) &&
+                matchCondition(condition, instance);
+    }
 
-//    private boolean matchThen(URL url, URL param) {
-////        return CollectionUtils.isNotEmptyMap(thenCondition) && matchCondition(thenCondition, url, param, null);
-//        return true;
-//    }
-
-    private boolean matchCondition() {
-        return true;
+    private boolean matchCondition(Map<String, MatchPair> condition, Instance instance) {
+        boolean result = false;
+        String ip = instance.getIp();
+        for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
+            String key = matchPair.getKey();
+            if (UrlUtils.isMatchGlobPattern(key, ip)) {
+                if (!matchPair.getValue().isMatch(ip)) {
+                    return false;
+                } else {
+                    result = true;
+                }
+            } else {
+                //not pass the condition
+                if (!matchPair.getValue().matches.isEmpty()) {
+                    return false;
+                } else {
+                    result = true;
+                }
+            }
+        }
+        return result;
     }
 
     private static Map<String, MatchPair> parseRule(String rule)
