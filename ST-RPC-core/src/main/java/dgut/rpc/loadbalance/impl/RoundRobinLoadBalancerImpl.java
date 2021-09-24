@@ -4,6 +4,7 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import dgut.rpc.loadbalance.AbstractLoadBalance;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @description: RoundRobinLoadBalancerImpl
@@ -12,13 +13,13 @@ import java.util.List;
  */
 public class RoundRobinLoadBalancerImpl extends AbstractLoadBalance {
 
-    private int index;
+    private AtomicInteger index;
 
     @Override
     protected Instance doSelect(List<Instance> instances) {
-        if (index >= instances.size()) {
-            index %= instances.size();
+        if (index.get() >= instances.size()) {
+            index.set(0);
         }
-        return instances.get(index++);
+        return instances.get(index.getAndIncrement());
     }
 }

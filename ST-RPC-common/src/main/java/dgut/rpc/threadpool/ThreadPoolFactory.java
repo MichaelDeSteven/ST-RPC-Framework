@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ThreadPoolFactory {
     /**
-     * 线程池参数
+     * 线程池默认参数
      */
     private static final int CORE_POOL_SIZE = 10;
     private static final int MAXIMUM_POOL_SIZE_SIZE = 10;
@@ -25,7 +25,7 @@ public class ThreadPoolFactory {
     private static ExecutorService threadPool;
 
     public static ExecutorService createDefaultThreadPool() {
-        return createDefaultThreadPool("thread-pool", false);
+        return createDefaultThreadPool("public-pool", false);
     }
 
     public static ExecutorService createDefaultThreadPool(String threadNamePrefix) {
@@ -33,12 +33,21 @@ public class ThreadPoolFactory {
     }
 
     private static ExecutorService createDefaultThreadPool(String threadNamePrefix, Boolean daemon) {
-        BlockingQueue<Runnable> workQueue = new ResizableCapacityLinkedBlockingQueue<>(BLOCKING_QUEUE_CAPACITY);
+        BlockingQueue<Runnable> workQueue = new ResizableCapacityLinkedBlockingQueue(BLOCKING_QUEUE_CAPACITY);
 
         ThreadFactory threadFactory = new myThreadFactory(threadNamePrefix, daemon);
 
-        return new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE_SIZE,
-                KEEP_ALIVE_TIME, TimeUnit.SECONDS, workQueue, threadFactory);
+        return new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS,
+                workQueue, threadFactory);
+    }
+
+    public static ExecutorService createThreadPool(String threadNamePrefix, int corePoolSize, int maximumPoolSize) {
+        BlockingQueue<Runnable> workQueue = new ResizableCapacityLinkedBlockingQueue(BLOCKING_QUEUE_CAPACITY);
+
+        ThreadFactory threadFactory = new myThreadFactory(threadNamePrefix, false);
+
+        return new ThreadPoolExecutor(corePoolSize, maximumPoolSize, KEEP_ALIVE_TIME, TimeUnit.SECONDS, workQueue,
+                threadFactory);
     }
 
     public static void shutdown() {
@@ -63,17 +72,14 @@ public class ThreadPoolFactory {
         myThreadFactory(String threadPoolName, boolean daemon) {
             this.daemon = daemon;
             SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() :
-                    Thread.currentThread().getThreadGroup();
-            namePrefix = threadPoolName + "-" + poolNumber.getAndIncrement() + "-thread-";
+            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            namePrefix = threadPoolName + "-thread-";
         }
 
 
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r,
-                    namePrefix + threadNumber.getAndIncrement(),
-                    0);
+            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
             t.setDaemon(daemon);
             if (t.getPriority() != Thread.NORM_PRIORITY) {
                 t.setPriority(Thread.NORM_PRIORITY);

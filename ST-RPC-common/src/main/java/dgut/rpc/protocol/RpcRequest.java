@@ -58,4 +58,9 @@ public class RpcRequest implements Serializable {
      */
     private boolean heartBeat;
 
+    /**
+     * 所属线程池组
+     */
+    private String threadPoolTag;
+
 }

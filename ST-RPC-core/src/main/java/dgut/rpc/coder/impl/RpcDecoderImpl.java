@@ -29,7 +29,6 @@ public class RpcDecoderImpl<T> extends ReplayingDecoder<T> implements ICommonDec
 
     private int serializerCode;
 
-
     private Class<T> clazz;
 
     public RpcDecoderImpl() {}
@@ -63,35 +62,23 @@ public class RpcDecoderImpl<T> extends ReplayingDecoder<T> implements ICommonDec
 
         if ((option & MORE_LENGTH_MASK) != 0) {
             stream.read(scaling, 0, 3);
-            dataLength = ((scaling[2] << 24) + (scaling[1] << 16) + (scaling[0] << 8))
-                    + dataLength;
+            dataLength = ((scaling[2] << 24) + (scaling[1] << 16) + (scaling[0] << 8)) + dataLength;
         }
         byte[] date = new byte[dataLength];
         stream.read(date, 0, dataLength);
-
-        serializerCode = serializerType;
-        ISerializer serializer = SerializerSingletonFactory
-                .getInstance()
-                .getBeanByCode(serializerType);
+        ISerializer serializer = SerializerSingletonFactory.getInstance().getBeanByCode(serializerType);
 
         T object = (T) serializer.deserialize(date, clazz);
         return object;
     }
 
     public int getLength(byte b) {
-        int ret = 0, cnt = 0;
-        while (b != 0) {
-            if ((b & 1) != 0) {
-                ret += 1 << cnt;
-            }
-            b >>>= 1;
-            cnt++;
-        }
-        return ret;
+        return b & 0xFF;
     }
 
     @Override
-    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
+    protected void decode(ChannelHandlerContext channelHandlerContext,
+                          ByteBuf byteBuf, List<Object> list) throws Exception {
         ByteBufAdapter byteBufAdapter = new ByteBufAdapter(byteBuf);
         list.add(decode(byteBufAdapter, clazz));
     }

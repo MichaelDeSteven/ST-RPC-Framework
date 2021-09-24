@@ -45,9 +45,16 @@ public class NacosUtil {
 
     public static void registerService(String serviceName, InetSocketAddress address)
             throws NacosException {
-        namingService.registerInstance(serviceName,
-                address.getHostName(),
-                address.getPort());
+        Instance instance = new Instance();
+        instance.setServiceName(serviceName);
+        instance.setIp(address.getHostName());
+        instance.setPort(address.getPort());
+        Map<String, String> metaData = new HashMap<>();
+        metaData.put("host", address.getHostName());
+        metaData.put("application", "rpc");
+        metaData.put("service", serviceName);
+        instance.setMetadata(metaData);
+        namingService.registerInstance(serviceName, instance);
         NacosUtil.address = address;
         serviceNames.add(serviceName);
     }

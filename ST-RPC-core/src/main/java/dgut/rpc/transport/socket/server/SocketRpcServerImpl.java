@@ -1,6 +1,10 @@
 package dgut.rpc.transport.socket.server;
 
 import dgut.rpc.enumeration.RpcError;
+import dgut.rpc.governance.CircuitBreaker;
+import dgut.rpc.governance.ThreadPoolResourceManager;
+import dgut.rpc.governance.impl.CircuitBreakerResourceManager;
+import dgut.rpc.governance.impl.ThreadPoolResourceManagerImpl;
 import dgut.rpc.threadpool.DynamicThreadPoolManager;
 import dgut.rpc.handler.RpcRequestHandler;
 import dgut.rpc.handler.SocketRequestThreadHandler;
@@ -22,18 +26,20 @@ public class SocketRpcServerImpl extends AbstractRpcServer<ServerSocket> {
 
     private static final Logger logger = LoggerFactory.getLogger(SocketRpcServerImpl.class);
 
-    private DynamicThreadPoolManager manager;
-
     private ThreadPoolExecutor threadPoolExecutor;
 
     private RpcRequestHandler handler;
 
+    private CircuitBreakerResourceManager circuitBreakerResourceManager;
+
+    private static ThreadPoolResourceManagerImpl manager;
 
     public SocketRpcServerImpl(int port) {
         super(port);
-        manager = DynamicThreadPoolManager.getInstance();
-        threadPoolExecutor = manager.createThreadPoolExecutor();
+        manager = ThreadPoolResourceManagerImpl.getInstance();
+        threadPoolExecutor = manager.getPublicThreadPoolExecutor();
         handler = new RpcRequestHandler(serviceProvider);
+        this.circuitBreakerResourceManager = CircuitBreakerResourceManager.getInstance();
     }
 
 
@@ -56,10 +62,10 @@ public class SocketRpcServerImpl extends AbstractRpcServer<ServerSocket> {
             } catch (IOException e) {
                 logger.error(RpcError.UNKNOWN_ERROR.getMessage());
             }
-            logger.info("调用方：{}与本服务器：{}:{}已建立连接",
-                    socket.getInetAddress(), socket.getInetAddress(), port);
-            threadPoolExecutor
-                    .execute(new SocketRequestThreadHandler(socket, handler));
+            logger.info("调用方：{}与本服务器：{}:{}已建立连接", socket.getInetAddress(), socket.getInetAddress(), port);
+
+            // 服务隔离
+            threadPoolExecutor.execute(new SocketRequestThreadHandler(socket, handler));
         }
 
     }

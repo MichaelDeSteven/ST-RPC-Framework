@@ -1,6 +1,5 @@
 package dgut.rpc.transport.socket.client;
 
-import com.alibaba.nacos.api.naming.pojo.Instance;
 import dgut.rpc.coder.ICommonDecoder;
 import dgut.rpc.coder.ICommonEncoder;
 import dgut.rpc.coder.impl.RpcDecoderImpl;
@@ -55,8 +54,7 @@ public class SocketRpcClientImpl extends AbstractRpcClient {
 
     @Override
     public RpcResponse sendRequest(RpcRequest request) {
-        IServiceDiscovery discovery =
-                SingletonFactory.getInstance(NacosServiceDiscoveryImpl.class);
+        IServiceDiscovery discovery = SingletonFactory.getInstance(NacosServiceDiscoveryImpl.class);
         InetSocketAddress inetSocketAddress =
                 loadBalancer.selectAddr(discovery.lookupService(request.getInterfaceName()));
         OutputStream os = null;
@@ -64,16 +62,16 @@ public class SocketRpcClientImpl extends AbstractRpcClient {
         ICommonEncoder encoder = new RpcEncoderImpl((byte)serializerCode);
         ICommonDecoder decoder = new RpcDecoderImpl();
         try {
-            Socket s = new Socket(inetSocketAddress.getAddress(),
-                    inetSocketAddress.getPort());
+            Socket s = new Socket(inetSocketAddress.getAddress(), inetSocketAddress.getPort());
             os = s.getOutputStream();
             is = s.getInputStream();
             os.write(encoder.encode(request));
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // 熔断+重试
         try {
-            return (RpcResponse) (decoder).decode(is, RpcResponse.class);
+            return (RpcResponse) decoder.decode(is, RpcResponse.class);
         } catch (Exception e) {
             logger.error("解码时发生错误:", e);
             throw new RuntimeException("解码时发生错误");

@@ -54,8 +54,7 @@ public class NettyRpcClientImpl extends AbstractRpcClient {
 
     @Override
     public CompletableFuture<RpcResponse> sendRequest(RpcRequest request) {
-        IServiceDiscovery discovery =
-                SingletonFactory.getInstance(NacosServiceDiscoveryImpl.class);
+        IServiceDiscovery discovery = SingletonFactory.getInstance(NacosServiceDiscoveryImpl.class);
         InetSocketAddress inetSocketAddress =
                 loadBalancer.selectAddr(discovery.lookupService(request.getInterfaceName()));
         CompletableFuture<RpcResponse> completableFuture = new CompletableFuture<>();

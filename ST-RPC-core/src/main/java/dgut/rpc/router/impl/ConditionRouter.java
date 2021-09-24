@@ -1,6 +1,8 @@
 package dgut.rpc.router.impl;
 
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.client.naming.NacosNamingService;
+import com.alibaba.nacos.client.naming.utils.NetUtils;
 import dgut.rpc.router.AbstractRouter;
 import dgut.rpc.util.CollectionUtils;
 import dgut.rpc.util.StringUtils;
@@ -27,13 +29,19 @@ public class ConditionRouter extends AbstractRouter {
 
     protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
 
-    protected static Pattern ARGUMENTS_PATTERN = Pattern.compile("arguments\\[([0-9]+)\\]");
-
     protected Map<String, MatchPair> whenCondition;
 
     protected Map<String, MatchPair> thenCondition;
 
     private boolean enabled;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     @Override
     public List<Instance> route(List<Instance> instants) {
@@ -42,11 +50,15 @@ public class ConditionRouter extends AbstractRouter {
         }
         try {
             // 不满足条件则提前返回
-            if (!matchWhen(whenCondition) || thenCondition == null) {
+            if (!matchWhen(whenCondition)) {
                 return instants;
             }
 
             List<Instance> result = new ArrayList<>();
+            if (thenCondition == null) {
+                logger.warn("当前服务消费方在黑名单中. 服务消费方: " + NetUtils.localIP());
+                return result;
+            }
             for (Instance instance : instants) {
                 if (matchThen(thenCondition, instance)) {
                     result.add(instance);
@@ -66,8 +78,6 @@ public class ConditionRouter extends AbstractRouter {
             if (rule == null || rule.trim().length() == 0) {
                 throw new IllegalArgumentException("Illegal route rule!");
             }
-            rule = rule.replace("consumer.", "")
-                    .replace("provider.", "");
             int i = rule.indexOf("=>");
             String whenRule = i < 0 ? null : rule.substring(0, i).trim();
             String thenRule = i < 0 ? rule.trim() : rule.substring(i + 2).trim();
@@ -84,40 +94,36 @@ public class ConditionRouter extends AbstractRouter {
     }
 
     private boolean matchWhen(Map<String, MatchPair> condition) {
-        return CollectionUtils.isEmptyMap(condition) ||
-                matchCondition(condition, new Instance());
+        Instance instance = new Instance();
+        instance.setIp(NetUtils.localIP());
+        return CollectionUtils.isEmptyMap(condition) || matchCondition(condition, instance);
     }
 
     private boolean matchThen(Map<String, MatchPair> condition, Instance instance) {
-        return !CollectionUtils.isEmptyMap(condition) &&
-                matchCondition(condition, instance);
+        return !CollectionUtils.isEmptyMap(condition) && matchCondition(condition, instance);
     }
 
     private boolean matchCondition(Map<String, MatchPair> condition, Instance instance) {
         boolean result = false;
         String ip = instance.getIp();
+        Map<String, String> metadata = instance.getMetadata();
         for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
             String key = matchPair.getKey();
-            if (UrlUtils.isMatchGlobPattern(key, ip)) {
+            String value = metadata.get(key);
+            if (value != null) {
                 if (!matchPair.getValue().isMatch(ip)) {
                     return false;
                 } else {
                     result = true;
                 }
             } else {
-                //not pass the condition
-                if (!matchPair.getValue().matches.isEmpty()) {
-                    return false;
-                } else {
-                    result = true;
-                }
+                return false;
             }
         }
         return result;
     }
 
-    private static Map<String, MatchPair> parseRule(String rule)
-            throws ParseException {
+    private static Map<String, MatchPair> parseRule(String rule) throws ParseException {
         Map<String, MatchPair> condition = new HashMap<>();
         if (StringUtils.isBlank(rule)) {
             return condition;
@@ -129,11 +135,12 @@ public class ConditionRouter extends AbstractRouter {
         while (matcher.find()) {
             String separator = matcher.group(1);
             String content = matcher.group(2);
+            // 开始
             if (StringUtils.isEmpty(separator)) {
                 pair = new MatchPair();
                 condition.put(content, pair);
             }
-            // 新的匹配集合
+            // &条件
             else if ("&".equals(separator)) {
                 if (condition.get(content) == null) {
                     pair = new MatchPair();
@@ -142,7 +149,7 @@ public class ConditionRouter extends AbstractRouter {
                     pair = condition.get(content);
                 }
             }
-            // 加入匹配路由
+            // 加入匹配路由集合
             else if ("=".equals(separator)) {
                 if (pair == null) {
                     parseError(rule, separator, matcher, content);
@@ -151,7 +158,7 @@ public class ConditionRouter extends AbstractRouter {
                 values = pair.matches;
                 values.add(content);
             }
-            // 加入不匹配路由
+            // 加入不匹配路由集合
             else if ("!=".equals(separator)) {
                 if (pair == null) {
                     parseError(rule, separator, matcher, content);
@@ -160,7 +167,7 @@ public class ConditionRouter extends AbstractRouter {
                 values = pair.mismatches;
                 values.add(content);
             }
-            // 加入匹配集合
+            // 加入集合
             else if (",".equals(separator)) {
                 if (values == null || values.isEmpty()) {
                     parseError(rule, separator, matcher, content);
@@ -173,10 +180,7 @@ public class ConditionRouter extends AbstractRouter {
         return condition;
     }
 
-    private static void parseError(String rule,
-                                   String separator,
-                                   Matcher matcher,
-                                   String content)
+    private static void parseError(String rule, String separator, Matcher matcher, String content)
             throws ParseException {
         throw new ParseException("Illegal route rule \"" + rule
                 + "\", The error char '" + separator + "' at index "

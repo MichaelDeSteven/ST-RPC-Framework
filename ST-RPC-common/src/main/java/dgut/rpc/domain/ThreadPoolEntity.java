@@ -12,7 +12,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class ConfigEntity {
+public class ThreadPoolEntity {
 
     /**
      * 线程池名称

@@ -20,8 +20,7 @@ public class DynamicThreadPoolManager {
     private ThreadPoolExecutorServiceConfigImpl serviceConfig;
 
     private static class DynamicThreadPoolManagerHolder {
-        private static DynamicThreadPoolManager dynamicThreadPoolManager =
-                new DynamicThreadPoolManager();
+        private static DynamicThreadPoolManager dynamicThreadPoolManager = new DynamicThreadPoolManager();
     }
 
     private DynamicThreadPoolManager() {
@@ -32,7 +31,7 @@ public class DynamicThreadPoolManager {
         return DynamicThreadPoolManagerHolder.dynamicThreadPoolManager;
     }
 
-    public ThreadPoolExecutor createThreadPoolExecutor() {
+    public ThreadPoolExecutor createDefaultThreadPoolExecutor() {
         threadPoolExecutor = (ThreadPoolExecutor) ThreadPoolFactory.createDefaultThreadPool();
         serviceConfig = new ThreadPoolExecutorServiceConfigImpl(threadPoolExecutor,
                 "0.0.0.0:8848", "123", "dgut");

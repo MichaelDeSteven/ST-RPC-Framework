@@ -15,8 +15,7 @@ public class NettyRpcTest {
                 .group("dgut")
                 .version("v1.0")
                 .build();
-        RpcRequestProxy rpcRequestProxy = new RpcRequestProxy(new NettyRpcClientImpl(),
-                rpcServicePropertyUtil);
+        RpcRequestProxy rpcRequestProxy = new RpcRequestProxy(new NettyRpcClientImpl(), rpcServicePropertyUtil);
         IHelloService iHelloService = rpcRequestProxy.getProxy(IHelloService.class);
         System.out.println(iHelloService.hello("rpc"));
     }

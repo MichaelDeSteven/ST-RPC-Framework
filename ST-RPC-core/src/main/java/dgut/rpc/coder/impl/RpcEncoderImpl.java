@@ -12,12 +12,14 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
+import java.io.Serializable;
+
 /**
  * @description: RpcEncoderImpl
  * @author: Steven
  * @time: 2021/3/7 16:35
  */
-public class RpcEncoderImpl extends MessageToByteEncoder implements ICommonEncoder  {
+public class RpcEncoderImpl extends MessageToByteEncoder implements ICommonEncoder {
 
     private static final int MAGIC_NUMBER = 0xBABE;
 
@@ -28,7 +30,7 @@ public class RpcEncoderImpl extends MessageToByteEncoder implements ICommonEncod
     private int serializerCode;
 
     public RpcEncoderImpl() {
-        serializerCode = 0;
+        serializerCode = 1;
     }
 
     public RpcEncoderImpl(int serializerCode) {
@@ -37,9 +39,7 @@ public class RpcEncoderImpl extends MessageToByteEncoder implements ICommonEncod
 
     @Override
     public byte[] encode(Object object) {
-        ISerializer serializer = SerializerSingletonFactory
-                .getInstance()
-                .getBeanByCode(serializerCode);
+        ISerializer serializer = SerializerSingletonFactory.getInstance().getBeanByCode(serializerCode);
 
         byte[] data = serializer.serialize(object);
         byte[] stream = null;
@@ -58,14 +58,11 @@ public class RpcEncoderImpl extends MessageToByteEncoder implements ICommonEncod
 
         byte packageType = 0;
         if (object instanceof RpcResponse) packageType = 1;
-
-        assign(data, packageType, (byte) serializerCode, stream,
-                dstPos, option);
+        assign(data, packageType, (byte) serializerCode, stream, dstPos, option);
         return stream;
     }
 
-    public void assign(byte[] src, byte packageType, byte serializerType,
-                       byte[] dst, int dstPos, byte option) {
+    public void assign(byte[] src, byte packageType, byte serializerType, byte[] dst, int dstPos, byte option) {
         dst[0] = 0XB;
         dst[1] = 0XA;
         dst[2] = 0XB;
@@ -83,8 +80,7 @@ public class RpcEncoderImpl extends MessageToByteEncoder implements ICommonEncod
     }
 
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext,
-                          Object o, ByteBuf byteBuf) throws Exception {
+    protected void encode(ChannelHandlerContext channelHandlerContext, Object o, ByteBuf byteBuf) throws Exception {
         channelHandlerContext.writeAndFlush(Unpooled.copiedBuffer(encode(o)));
     }
 }

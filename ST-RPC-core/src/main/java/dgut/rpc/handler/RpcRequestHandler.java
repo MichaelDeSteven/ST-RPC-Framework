@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
  * @time: 2021/3/8 16:46
  */
 public class RpcRequestHandler implements Handler<RpcRequest>  {
+
     private static IServiceProvider serviceProvider;
 
     private static final Logger logger = LoggerFactory.getLogger(RpcRequestHandler.class);
@@ -27,15 +28,11 @@ public class RpcRequestHandler implements Handler<RpcRequest>  {
     }
 
     private RpcResponse fail(ResponseCode responseCode, String requestId) {
-        return RpcResponSingletonFactory
-                .getInstance()
-                .fail(responseCode, requestId);
+        return RpcResponSingletonFactory.getInstance().fail(responseCode, requestId);
     }
 
     private RpcResponse success(Object result, String requestId) {
-        return RpcResponSingletonFactory
-                .getInstance()
-                .success(result, requestId);
+        return RpcResponSingletonFactory.getInstance().success(result, requestId);
     }
 
     @Override
@@ -51,11 +48,9 @@ public class RpcRequestHandler implements Handler<RpcRequest>  {
         Object result = null;
 
         try {
-            method = service.getClass().getMethod(request.getMethodName(),
-                    request.getParamTypes());
+            method = service.getClass().getMethod(request.getMethodName(), request.getParamTypes());
             result = method.invoke(service, request.getParameters());
-            logger.info("调用方调用了{}#{}方法", service.getClass().getName(),
-                    request.getMethodName());
+            logger.info("调用方调用了{}#{}方法", service.getClass().getName(), request.getMethodName());
         } catch (NoSuchMethodException | IllegalAccessException e) {
             logger.error("未找到指定方法");
             result = fail(ResponseCode.METHOD_NOT_FOUND, request.getRequestId());

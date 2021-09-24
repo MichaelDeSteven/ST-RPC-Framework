@@ -14,11 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SerializerSingletonFactory
         implements IAbstractFactory<ISerializer> {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(SerializerSingletonFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(SerializerSingletonFactory.class);
 
-    private ConcurrentHashMap<String, ISerializer> serializerBeanMap
-            = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, ISerializer> serializerBeanMap = new ConcurrentHashMap<>();
 
     private SerializerSingletonFactory() {}
 

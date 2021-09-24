@@ -1,6 +1,7 @@
 package dgut.rpc;
 
 import dgut.rpc.proxy.RpcRequestProxy;
+import dgut.rpc.serializer.protobuf.ProtobufSerializerImpl;
 import dgut.rpc.transport.socket.client.SocketRpcClientImpl;
 import dgut.rpc.util.RpcServicePropertyUtil;
 
@@ -15,10 +16,10 @@ public class SocketRpcTest {
                 .group("")
                 .version("")
                 .build();
-        RpcRequestProxy rpcRequestProxy = new RpcRequestProxy(new SocketRpcClientImpl(),
-                rpcServicePropertyUtil);
+        RpcRequestProxy rpcRequestProxy = new RpcRequestProxy(new SocketRpcClientImpl(), rpcServicePropertyUtil);
         IHelloService iHelloService = rpcRequestProxy.getProxy(IHelloService.class);
         StringBuilder sb = new StringBuilder("");
-        System.out.println(iHelloService.hello("rpc"));
+        for (int i = 0; i < 500; i++) sb.append("rpc");
+        System.out.println(iHelloService.hello(sb.toString()));
     }
 }
