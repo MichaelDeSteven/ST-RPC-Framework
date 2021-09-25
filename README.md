@@ -1,5 +1,5 @@
 # ST-RPC-Framework
-基于nacos实现的一款具备服务治理、动态配置、简便的rpc框架
+基于nacos实现的一款简单的、轻量、拥有服务治理能力的rpc框架
 ## 特性
 
 * 实现了基于 Java 原生 Socket 传输与 Netty 传输两种网络传输方式
